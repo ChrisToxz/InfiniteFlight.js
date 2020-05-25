@@ -10,9 +10,10 @@ exports.init = function (success, error) {
       if (response.Addresses[1] && response.Port) {
         _addr = response.Addresses[1];
         _port = 10111;
-        console.log("Connected to Infinite Flight at " + _addr + ':' + 10111);
         s.close();
         client = new net.Socket();
+        client.connect(parseInt(_port), _addr);
+        console.log("Connected to Infinite Flight at " + _addr + ':' + 10111);
         success();
       }
     });
@@ -24,18 +25,16 @@ exports.init = function (success, error) {
 
 exports.sendCmd = function (cmd, params) {
   try {
-    client.connect(parseInt(_port), _addr, function() {
-      var jsonStr = JSON.stringify({"Command": cmd, "Parameters": params});
-      var data = new Uint8Array(jsonStr.length + 4);
-      data[0] = jsonStr.length;
+    var jsonStr = JSON.stringify({"Command": cmd, "Parameters": params});
+    var data = new Uint8Array(jsonStr.length + 4);
+    data[0] = jsonStr.length;
 
-      for (var i = 0; i < jsonStr.length; i++) {
-        data[i+4] = jsonStr.charCodeAt(i);
-      }
+    for (var i = 0; i < jsonStr.length; i++) {
+      data[i+4] = jsonStr.charCodeAt(i);
+    }
 
-      var buffer = Buffer.from(data);
-      client.write(buffer);
-    });
+    var buffer = Buffer.from(data);
+    client.write(buffer);
     return true;
   } catch {
     return false;
